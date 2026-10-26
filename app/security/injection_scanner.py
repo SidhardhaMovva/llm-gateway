@@ -7,7 +7,7 @@ from typing import Optional
 # Patterns that often indicate prompt injection attempts (simplified)
 INJECTION_PATTERNS = [
     r"ignore\s+(all\s+)?(previous|above|prior)\s+instructions",
-    r"disregard\s+(your\s+)?(instructions|system\s+prompt)",
+    r"disregard\s+(your\s+|the\s+)?(instructions|system\s+prompt)",
     r"you\s+are\s+now\s+",
     r"pretend\s+you\s+are\s+",
     r"act\s+as\s+if\s+you\s+are\s+",
@@ -18,7 +18,10 @@ INJECTION_PATTERNS = [
     r"###\s*system\s*:",
 ]
 
-COMPILED = [re.compile(p, re.IGNORECASE) for p in INJECTION_PATTERNS]
+# MULTILINE so line-anchored patterns (``human:\s*$``, ``assistant:\s*$``)
+# also match on lines inside a multi-line message, not only at the very
+# end of the whole string.
+COMPILED = [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in INJECTION_PATTERNS]
 
 
 def scan_prompt(text: Optional[str]) -> tuple[bool, Optional[str]]:

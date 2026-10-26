@@ -30,6 +30,13 @@ llm-gateway/
 ├── db/
 │   └── init.sql
 ├── tests/
+│   ├── conftest.py            # in-memory fake Redis + fixtures
+│   ├── test_cache.py          # semantic cache + cosine similarity + Redis helpers
+│   ├── test_fallback.py       # fallback mapping + provider routing
+│   ├── test_injection_scanner.py
+│   ├── test_proxy.py          # proxy flow with providers/DB mocked
+│   └── test_rate_limiter.py
+├── .env.example
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -54,3 +61,23 @@ llm-gateway/
 ## API documentation
 
 Swagger UI: http://localhost:8000/docs
+
+Note: streaming is **not** supported yet — requests with `"stream": true`
+are rejected with `501` rather than silently mishandled.
+
+## Tests
+
+74 pytest tests covering the semantic cache, fallback/provider routing,
+the injection scanner, per-tenant rate limiting, and the full proxy flow.
+They run with **no external services**: Redis is replaced by an in-memory
+fake, and the database and provider APIs are mocked, so no API keys are
+needed.
+
+```bash
+pip install -r requirements.txt
+python -m pytest tests/ -q
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

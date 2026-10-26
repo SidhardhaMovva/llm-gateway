@@ -47,6 +47,8 @@ async def set_json(key: str, value: Any, ttl_seconds: int = 3600) -> None:
 async def incr(key: str, ttl_seconds: Optional[int] = None) -> int:
     r = await get_redis()
     n = await r.incr(key)
-    if ttl_seconds is not None:
+    # Set the expiry only when the counter is created. Previously this ran
+    # on every increment, so a steadily used key never expired.
+    if ttl_seconds is not None and n == 1:
         await r.expire(key, ttl_seconds)
     return n

@@ -45,7 +45,9 @@ def _messages_to_anthropic(messages: list[dict[str, Any]]) -> tuple[str, list[di
         role = m.get("role", "user")
         content = m.get("content") or ""
         if role == "system":
-            system = content
+            # Keep every system message; previously each one overwrote the
+            # last, silently dropping earlier system instructions.
+            system = f"{system}\n\n{content}" if system else content
         else:
             anthropic_messages.append({"role": role, "content": content})
     return system, anthropic_messages

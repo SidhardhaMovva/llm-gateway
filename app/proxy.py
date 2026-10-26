@@ -134,9 +134,16 @@ async def proxy_chat(request: Request, body: dict[str, Any]) -> dict[str, Any] |
                         timeout=60.0,
                     )
                 error_msg = None
+                provider_name = provider
             except Exception as e2:
                 error_msg = str(e2)
                 raise HTTPException(status_code=502, detail=f"Provider error: {error_msg}")
+
+    if resp is None:
+        # Primary provider failed and no fallback model exists for it.
+        # Previously this fell through and returned (and cached) a fabricated
+        # empty response as if it were a success.
+        raise HTTPException(status_code=502, detail=f"Provider error: {error_msg}")
 
     latency_ms = int((time.perf_counter() - start) * 1000)
 
